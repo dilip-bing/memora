@@ -3,6 +3,7 @@ import ChatWindow from './components/ChatWindow';
 import MessageInput from './components/MessageInput';
 import MemoryPanel from './components/MemoryPanel';
 import SettingsModal from './components/SettingsModal';
+import DocumentsPanel from './components/DocumentsPanel';
 import { useStore } from './hooks/useStore';
 import { useEffect } from 'react';
 
@@ -57,6 +58,7 @@ export default function App() {
 
       <MemoryPanel />
       <SettingsModal />
+      {!needsSetup && <DocumentsPanel />}
     </div>
   );
 }
