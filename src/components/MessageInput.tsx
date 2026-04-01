@@ -12,10 +12,12 @@ export default function MessageInput() {
   const chat = getActiveChat();
 
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 160) + 'px';
-    }
+    const el = textareaRef.current;
+    if (!el) return;
+    requestAnimationFrame(() => {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+    });
   }, [input]);
 
   const handleSubmit = async () => {
@@ -108,7 +110,7 @@ export default function MessageInput() {
         <div className="flex-1 relative">
           <textarea
             ref={textareaRef}
-            className="w-full resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400 transition-all"
+            className="w-full resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400 transition-colors"
             placeholder="Ask something about your documents..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
