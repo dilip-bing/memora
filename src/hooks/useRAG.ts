@@ -2,6 +2,8 @@ import { v4 as uuid } from 'uuid';
 import { useStore } from './useStore';
 import type { QueryResponse } from '../types';
 
+const POLL_INTERVAL = 2000; // 2 seconds
+
 export function useRAG() {
   const { settings, addMessage, setLoading, activeChat } = useStore();
 
@@ -29,12 +31,15 @@ export function useRAG() {
         fullQuestion = `[Memory Context]\n${chat.memory.trim()}\n[End Memory Context]\n\n${question}`;
       }
 
-      const res = await fetch(`${settings.apiUrl}/query`, {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'X-API-Key': settings.apiKey,
+      };
+
+      // Step 1: Submit the query — returns immediately with a task_id
+      const submitRes = await fetch(`${settings.apiUrl}/query`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': settings.apiKey,
-        },
+        headers,
         body: JSON.stringify({
           question: fullQuestion,
           collection: chat.collection,
@@ -42,12 +47,15 @@ export function useRAG() {
         }),
       });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: res.statusText }));
-        throw new Error(err.detail || `HTTP ${res.status}`);
+      if (!submitRes.ok) {
+        const err = await submitRes.json().catch(() => ({ detail: submitRes.statusText }));
+        throw new Error(err.detail || `HTTP ${submitRes.status}`);
       }
 
-      const data: QueryResponse = await res.json();
+      const { task_id } = await submitRes.json();
+
+      // Step 2: Poll for the result
+      const data = await pollForResult(task_id, headers);
 
       addMessage(chat.id, {
         id: uuid(),
@@ -60,6 +68,33 @@ export function useRAG() {
       });
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function pollForResult(
+    taskId: string,
+    headers: Record<string, string>,
+  ): Promise<QueryResponse> {
+    while (true) {
+      await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+
+      const res = await fetch(`${settings.apiUrl}/query/${taskId}`, { headers });
+
+      if (!res.ok) {
+        throw new Error(`Poll failed: HTTP ${res.status}`);
+      }
+
+      const task = await res.json();
+
+      if (task.status === 'completed' && task.result) {
+        return task.result as QueryResponse;
+      }
+
+      if (task.status === 'error') {
+        throw new Error(task.error || 'Query failed on server');
+      }
+
+      // status === 'processing' → keep polling
     }
   }
 
