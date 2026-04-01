@@ -46,4 +46,11 @@ export interface AppSettings {
   apiKey: string;
   defaultCollection: string;
   defaultThinking: boolean;
+  selectedModel: string;
+}
+
+export interface OllamaModel {
+  name: string;
+  size: number;
+  modified_at: string;
 }

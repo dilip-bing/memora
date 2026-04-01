@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   apiKey: '',
   defaultCollection: 'documents',
   defaultThinking: true,
+  selectedModel: '',
 };
 
 export function loadChats(): Chat[] {

@@ -1,15 +1,36 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../hooks/useStore';
 import { useRAG } from '../hooks/useRAG';
+import type { OllamaModel } from '../types';
 
 export default function MessageInput() {
-  const { activeChat: getActiveChat, isLoading, settings, toggleMemoryPanel, memoryPanelOpen } = useStore();
+  const { activeChat: getActiveChat, isLoading, settings, updateSettings, toggleMemoryPanel, memoryPanelOpen } = useStore();
   const { sendQuery } = useRAG();
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(settings.defaultThinking);
   const [error, setError] = useState('');
+  const [models, setModels] = useState<OllamaModel[]>([]);
+  const [modelsOpen, setModelsOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const chat = getActiveChat();
+
+  // Fetch models on mount
+  useEffect(() => {
+    if (!settings.apiUrl || !settings.apiKey) return;
+    fetch(`${settings.apiUrl}/models`, {
+      headers: { 'X-API-Key': settings.apiKey },
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.models) {
+          setModels(data.models);
+          if (!settings.selectedModel && data.active_model) {
+            updateSettings({ selectedModel: data.active_model });
+          }
+        }
+      })
+      .catch(() => {});
+  }, [settings.apiUrl, settings.apiKey]);
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -103,6 +124,49 @@ export default function MessageInput() {
         <span className="px-2.5 py-1 bg-gray-100 rounded-full text-xs text-gray-500 font-medium">
           {chat.collection}
         </span>
+
+        {/* Model selector */}
+        <div className="relative ml-auto">
+          <button
+            onClick={() => setModelsOpen(!modelsOpen)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+            title="Select model"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+            {settings.selectedModel
+              ? settings.selectedModel.split(':')[0]
+              : 'default'}
+          </button>
+          {modelsOpen && (
+            <div className="absolute bottom-full mb-1 right-0 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 max-h-60 overflow-y-auto">
+              <button
+                onClick={() => { updateSettings({ selectedModel: '' }); setModelsOpen(false); }}
+                className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-50 ${!settings.selectedModel ? 'text-blue-700 font-semibold bg-blue-50' : 'text-gray-700'}`}
+              >
+                Default (server config)
+              </button>
+              {models
+                .filter((m) => !m.name.includes('embed') && !m.name.includes('bge'))
+                .map((m) => (
+                  <button
+                    key={m.name}
+                    onClick={() => { updateSettings({ selectedModel: m.name }); setModelsOpen(false); }}
+                    className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-50 ${settings.selectedModel === m.name ? 'text-blue-700 font-semibold bg-blue-50' : 'text-gray-700'}`}
+                  >
+                    {m.name}
+                    <span className="ml-2 text-gray-400">
+                      {(m.size / 1e9).toFixed(1)}GB
+                    </span>
+                  </button>
+                ))}
+              {models.length === 0 && (
+                <div className="px-3 py-2 text-xs text-gray-400">No models found</div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Input area */}

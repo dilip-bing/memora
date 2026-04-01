@@ -44,6 +44,7 @@ export function useRAG() {
           question: fullQuestion,
           collection: chat.collection,
           thinking,
+          ...(settings.selectedModel ? { model: settings.selectedModel } : {}),
         }),
       });
 
