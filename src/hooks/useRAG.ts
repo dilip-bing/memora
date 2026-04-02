@@ -155,12 +155,8 @@ export function useRAG() {
         }
       }
     } catch (error) {
-      // On error, remove the placeholder message
-      const chat = activeChat();
-      if (chat) {
-        const messages = chat.messages.filter(m => m.id !== messageId);
-        updateMessage(chatId, messageId, { content: '' }); // Clear it first
-      }
+      // On error, remove the placeholder message by clearing its content
+      // This will be handled by the outer try-catch
       throw error;
     }
   }
