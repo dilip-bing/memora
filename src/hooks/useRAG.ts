@@ -13,6 +13,15 @@ export function useRAG() {
     if (!settings.apiUrl) throw new Error('API URL not configured. Open Settings to set it.');
     if (!settings.apiKey) throw new Error('API Key not configured. Open Settings to set it.');
 
+    // Disable streaming for Cloudflare tunnels (SSE not supported)
+    // Note: If you're using ngrok, localtunnel, or direct hosting, streaming will work
+    const isCloudflare = settings.apiUrl.includes('trycloudflare.com') || settings.apiUrl.includes('cloudflare');
+    const useStreamingFinal = useStreaming && !isCloudflare;
+    
+    if (isCloudflare) {
+      console.log('Cloudflare tunnel detected - using polling instead of streaming');
+    }
+
     // Add user message
     addMessage(chat.id, {
       id: uuid(),
@@ -37,8 +46,15 @@ export function useRAG() {
       };
 
       // Use streaming if supported
-      if (useStreaming) {
-        await sendQueryStream(fullQuestion, thinking, chat.id, chat.collection, headers);
+      if (useStreamingFinal) {
+        try {
+          await sendQueryStream(fullQuestion, thinking, chat.id, chat.collection, headers);
+        } catch (streamError) {
+          // Fallback to polling if streaming fails
+          console.warn('Streaming failed, falling back to polling:', streamError);
+          // Don't call polling here - just let the error propagate and use the non-streaming path
+          throw streamError;
+        }
       } else {
         // Fallback to old polling method
         await sendQueryPolling(fullQuestion, thinking, chat.id, chat.collection, headers);
@@ -139,12 +155,12 @@ export function useRAG() {
         }
       }
     } catch (error) {
-      // On error, update message with error state
-      updateMessage(chatId, messageId, {
-        content: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        isStreaming: false,
-        streamingStatus: undefined,
-      });
+      // On error, remove the placeholder message
+      const chat = activeChat();
+      if (chat) {
+        const messages = chat.messages.filter(m => m.id !== messageId);
+        updateMessage(chatId, messageId, { content: '' }); // Clear it first
+      }
       throw error;
     }
   }
