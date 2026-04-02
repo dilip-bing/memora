@@ -10,27 +10,49 @@ export default function MessageInput() {
   const [thinking, setThinking] = useState(settings.defaultThinking);
   const [error, setError] = useState('');
   const [models, setModels] = useState<OllamaModel[]>([]);
+  const [activeModel, setActiveModel] = useState('');
   const [modelsOpen, setModelsOpen] = useState(false);
+  const [modelsLoading, setModelsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const chat = getActiveChat();
 
-  // Fetch models on mount
-  useEffect(() => {
+  const fetchModels = async () => {
     if (!settings.apiUrl || !settings.apiKey) return;
-    fetch(`${settings.apiUrl}/models`, {
-      headers: { 'X-API-Key': settings.apiKey },
-    })
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => {
-        if (data?.models) {
-          setModels(data.models);
-          if (!settings.selectedModel && data.active_model) {
-            updateSettings({ selectedModel: data.active_model });
-          }
+    setModelsLoading(true);
+    try {
+      const res = await fetch(`${settings.apiUrl}/models`, {
+        headers: { 'X-API-Key': settings.apiKey },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data?.models) {
+        setModels(data.models);
+        setActiveModel(data.active_model || '');
+        if (!settings.selectedModel && data.active_model) {
+          updateSettings({ selectedModel: data.active_model });
         }
-      })
-      .catch(() => {});
-  }, [settings.apiUrl, settings.apiKey]);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setModelsLoading(false);
+    }
+  };
+
+  // Fetch models on mount
+  useEffect(() => { fetchModels(); }, [settings.apiUrl, settings.apiKey]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setModelsOpen(false);
+      }
+    };
+    if (modelsOpen) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [modelsOpen]);
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -126,43 +148,74 @@ export default function MessageInput() {
         </span>
 
         {/* Model selector */}
-        <div className="relative ml-auto">
+        <div className="relative ml-auto" ref={dropdownRef}>
           <button
-            onClick={() => setModelsOpen(!modelsOpen)}
+            onClick={() => { setModelsOpen(!modelsOpen); if (!modelsOpen) fetchModels(); }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
-            title="Select model"
+            title={`Model: ${settings.selectedModel || activeModel || 'not set'}`}
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
             </svg>
-            {settings.selectedModel
-              ? settings.selectedModel.split(':')[0]
-              : 'default'}
+            {settings.selectedModel || activeModel || 'Model'}
+            <svg className="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
           {modelsOpen && (
-            <div className="absolute bottom-full mb-1 right-0 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 max-h-60 overflow-y-auto">
-              <button
-                onClick={() => { updateSettings({ selectedModel: '' }); setModelsOpen(false); }}
-                className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-50 ${!settings.selectedModel ? 'text-blue-700 font-semibold bg-blue-50' : 'text-gray-700'}`}
-              >
-                Default (server config)
-              </button>
-              {models
-                .filter((m) => !m.name.includes('embed') && !m.name.includes('bge'))
-                .map((m) => (
-                  <button
-                    key={m.name}
-                    onClick={() => { updateSettings({ selectedModel: m.name }); setModelsOpen(false); }}
-                    className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-50 ${settings.selectedModel === m.name ? 'text-blue-700 font-semibold bg-blue-50' : 'text-gray-700'}`}
-                  >
-                    {m.name}
-                    <span className="ml-2 text-gray-400">
-                      {(m.size / 1e9).toFixed(1)}GB
-                    </span>
-                  </button>
-                ))}
-              {models.length === 0 && (
-                <div className="px-3 py-2 text-xs text-gray-400">No models found</div>
+            <div className="absolute bottom-full mb-1 right-0 w-64 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 max-h-72 overflow-y-auto">
+              <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Select Model</span>
+                <button
+                  onClick={fetchModels}
+                  className="text-gray-400 hover:text-blue-600 transition-colors"
+                  title="Refresh models"
+                >
+                  <svg className={`w-3.5 h-3.5 ${modelsLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              </div>
+              {modelsLoading && models.length === 0 ? (
+                <div className="px-3 py-4 text-xs text-gray-400 text-center">Loading models...</div>
+              ) : models.length === 0 ? (
+                <div className="px-3 py-4 text-xs text-gray-400 text-center">
+                  No models found.<br />
+                  <span className="text-gray-300">Check API URL & key in Settings</span>
+                </div>
+              ) : (
+                models
+                  .filter((m) => !m.name.includes('embed') && !m.name.includes('bge'))
+                  .map((m) => {
+                    const isSelected = settings.selectedModel === m.name;
+                    const isDefault = m.name === activeModel;
+                    return (
+                      <button
+                        key={m.name}
+                        onClick={() => { updateSettings({ selectedModel: m.name }); setModelsOpen(false); }}
+                        className={`w-full text-left px-3 py-2.5 text-xs hover:bg-blue-50 flex items-center justify-between transition-colors ${
+                          isSelected ? 'text-blue-700 bg-blue-50 font-semibold' : 'text-gray-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {isSelected && (
+                            <svg className="w-3.5 h-3.5 text-blue-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                          <span>{m.name}</span>
+                          {isDefault && (
+                            <span className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-400 text-[10px] font-medium">
+                              default
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-gray-400 shrink-0">
+                          {(m.size / 1e9).toFixed(1)}GB
+                        </span>
+                      </button>
+                    );
+                  })
               )}
             </div>
           )}
