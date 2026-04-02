@@ -6,6 +6,8 @@ export interface Message {
   thinking?: boolean;
   elapsed_seconds?: number;
   sources?: SourceNode[];
+  isStreaming?: boolean;  // New: indicates message is being streamed
+  streamingStatus?: string;  // New: "Thinking" | "Fast thinking"
 }
 
 export interface SourceNode {

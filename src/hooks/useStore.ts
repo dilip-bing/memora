@@ -14,6 +14,7 @@ interface Store {
   setActiveChat: (id: string) => void;
   renameChat: (id: string, title: string) => void;
   addMessage: (chatId: string, message: Message) => void;
+  updateMessage: (chatId: string, messageId: string, updates: Partial<Message>) => void;
   updateMemory: (chatId: string, memory: string) => void;
   updateChatCollection: (chatId: string, collection: string) => void;
 
@@ -87,6 +88,18 @@ export const useStore = create<Store>((set, get) => ({
         ? message.content.slice(0, 40) + (message.content.length > 40 ? '...' : '')
         : c.title;
       return { ...c, messages, title, updatedAt: Date.now() };
+    });
+    saveChats(chats);
+    set({ chats });
+  },
+
+  updateMessage: (chatId: string, messageId: string, updates: Partial<Message>) => {
+    const chats = get().chats.map((c) => {
+      if (c.id !== chatId) return c;
+      const messages = c.messages.map((m) =>
+        m.id === messageId ? { ...m, ...updates } : m
+      );
+      return { ...c, messages, updatedAt: Date.now() };
     });
     saveChats(chats);
     set({ chats });

@@ -14,17 +14,33 @@ function MessageBubble({ message }: { message: Message }) {
             : 'bg-white border border-gray-200 rounded-2xl rounded-bl-md px-5 py-4 shadow-sm'
         }`}
       >
+        {/* Streaming Status */}
+        {message.isStreaming && message.streamingStatus && (
+          <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-100">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+              <span className="text-xs font-medium text-gray-600">{message.streamingStatus}</span>
+            </div>
+          </div>
+        )}
+
         {/* Content */}
         <div className={`prose text-sm leading-relaxed ${isUser ? 'text-white' : 'text-gray-800'}`}>
           {isUser ? (
             <p className="whitespace-pre-wrap m-0">{message.content}</p>
-          ) : (
+          ) : message.content ? (
             <div
               className="whitespace-pre-wrap [&>p]:mb-2 [&>p:last-child]:mb-0"
               dangerouslySetInnerHTML={{
                 __html: formatMarkdown(message.content),
               }}
             />
+          ) : (
+            <div className="flex items-center gap-2 text-gray-400 italic">
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
           )}
         </div>
 
