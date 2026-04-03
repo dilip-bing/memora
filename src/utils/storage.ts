@@ -14,7 +14,12 @@ const DEFAULT_SETTINGS: AppSettings = {
 export function loadChats(): Chat[] {
   try {
     const raw = localStorage.getItem(CHATS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    // Migrate: add memoryCards if missing
+    return JSON.parse(raw).map((c: Chat) => ({
+      ...c,
+      memoryCards: c.memoryCards ?? [],
+    }));
   } catch {
     return [];
   }

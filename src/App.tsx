@@ -7,6 +7,7 @@ import DocumentsPanel from './components/DocumentsPanel';
 import LoginPage from './components/LoginPage';
 import { useStore } from './hooks/useStore';
 import { useAuth } from './hooks/useAuth';
+import { useMemory } from './hooks/useMemory';
 import { useEffect } from 'react';
 
 function SetupPrompt() {
@@ -37,6 +38,7 @@ function SetupPrompt() {
 export default function App() {
   const { settings, sidebarOpen } = useStore();
   const { isAuthenticated, token } = useAuth();
+  const { loadGlobalMemory } = useMemory();
   const needsSetup = !settings.apiUrl || !settings.apiKey;
 
   // Set page title
@@ -51,8 +53,14 @@ export default function App() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
-    }).catch(() => {}); // fire-and-forget, non-blocking
+    }).catch(() => {}); // fire-and-forget
   }, [isAuthenticated, token, settings.apiUrl]);
+
+  // Load global memory from backend once API is ready
+  useEffect(() => {
+    if (!isAuthenticated || !settings.apiUrl || !settings.apiKey) return;
+    loadGlobalMemory().catch(() => {});
+  }, [isAuthenticated, settings.apiUrl, settings.apiKey]);
 
   // Show login page if not authenticated
   if (!isAuthenticated) {

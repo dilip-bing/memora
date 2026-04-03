@@ -4,7 +4,7 @@ import { useRAG } from '../hooks/useRAG';
 import type { OllamaModel } from '../types';
 
 export default function MessageInput() {
-  const { activeChat: getActiveChat, isLoading, settings, updateSettings, toggleMemoryPanel, memoryPanelOpen } = useStore();
+  const { activeChat: getActiveChat, isLoading, settings, updateSettings, toggleMemoryPanel, memoryPanelOpen, globalMemoryCards } = useStore();
   const { sendQuery } = useRAG();
   const [input, setInput] = useState('');
   const [error, setError] = useState('');
@@ -149,7 +149,7 @@ export default function MessageInput() {
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
             memoryPanelOpen
               ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-              : chat.memory
+              : (chat.memoryCards?.length ?? 0) > 0 || globalMemoryCards.length > 0
                 ? 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200'
                 : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
           }`}
@@ -158,7 +158,7 @@ export default function MessageInput() {
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
-          Memory{chat.memory ? ' *' : ''}
+          Memory{(chat.memoryCards?.length ?? 0) + globalMemoryCards.length > 0 ? ` (${(chat.memoryCards?.length ?? 0) + globalMemoryCards.length})` : ''}
         </button>
 
         {/* Collection badge */}

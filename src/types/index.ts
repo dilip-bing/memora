@@ -1,3 +1,17 @@
+// ── Memory ────────────────────────────────────────────────────────────────
+export type MemoryCardType = 'fact' | 'preference' | 'context' | 'skill' | 'goal';
+export type MemoryImportance = 'high' | 'medium' | 'low';
+
+export interface MemoryCard {
+  id: string;
+  type: MemoryCardType;
+  content: string;
+  importance: MemoryImportance;
+  tags: string[];
+  createdAt: number;
+}
+
+// ── Messages ──────────────────────────────────────────────────────────────
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -21,7 +35,8 @@ export interface Chat {
   id: string;
   title: string;
   messages: Message[];
-  memory: string;
+  memory: string;          // legacy, kept for migration
+  memoryCards: MemoryCard[]; // structured per-chat memory
   collection: string;
   createdAt: number;
   updatedAt: number;

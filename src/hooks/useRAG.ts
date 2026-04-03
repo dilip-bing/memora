@@ -1,11 +1,46 @@
 import { v4 as uuid } from 'uuid';
 import { useStore } from './useStore';
-import type { QueryResponse } from '../types';
+import type { MemoryCard, QueryResponse } from '../types';
+
+const importanceRank: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
+function buildMemoryContext(globalCards: MemoryCard[], chatCards: MemoryCard[]): string {
+  if (!globalCards.length && !chatCards.length) return '';
+
+  const sortCards = (cards: MemoryCard[]) =>
+    [...cards].sort((a, b) => (importanceRank[a.importance] ?? 1) - (importanceRank[b.importance] ?? 1));
+
+  const lines: string[] = [
+    '[PERSONALIZATION — Use this context to improve response accuracy, depth, and relevance]',
+    '',
+  ];
+
+  if (globalCards.length > 0) {
+    lines.push('About the user:');
+    sortCards(globalCards).forEach((c) => lines.push(`  • ${c.content}`));
+    lines.push('');
+  }
+
+  if (chatCards.length > 0) {
+    lines.push('Current conversation context:');
+    sortCards(chatCards).forEach((c) => lines.push(`  • ${c.content}`));
+    lines.push('');
+  }
+
+  lines.push(
+    'Instructions: Adjust answer depth, terminology, and focus to match this context.',
+    'Skip basics the user already knows. Be specific to their situation.',
+    '[END PERSONALIZATION]',
+    '',
+  );
+
+  return lines.join('\n');
+}
 
 const POLL_INTERVAL = 2000; // 2 seconds
 
 export function useRAG() {
-  const { settings, addMessage, updateMessage, setLoading, activeChat } = useStore();
+  const { settings, addMessage, updateMessage, setLoading, activeChat, globalMemoryCards } = useStore();
 
   async function sendQuery(question: string, thinking: boolean): Promise<void> {
     const chat = activeChat();
@@ -25,11 +60,12 @@ export function useRAG() {
     setLoading(true);
 
     try {
-      // Build the full question with memory context
-      let fullQuestion = question;
-      if (chat.memory.trim()) {
-        fullQuestion = `[Memory Context]\n${chat.memory.trim()}\n[End Memory Context]\n\n${question}`;
-      }
+      // Build rich personalised context from both memory layers
+      const memContext = buildMemoryContext(
+        globalMemoryCards,
+        chat.memoryCards ?? [],
+      );
+      const fullQuestion = memContext ? `${memContext}\n${question}` : question;
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',

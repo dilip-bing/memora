@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { v4 as uuid } from 'uuid';
-import type { Chat, Message, AppSettings } from '../types';
+import type { Chat, Message, AppSettings, MemoryCard } from '../types';
 import { loadChats, saveChats, loadSettings, saveSettings } from '../utils/storage';
 
 interface Store {
@@ -16,7 +16,12 @@ interface Store {
   addMessage: (chatId: string, message: Message) => void;
   updateMessage: (chatId: string, messageId: string, updates: Partial<Message>) => void;
   updateMemory: (chatId: string, memory: string) => void;
+  updateChatMemoryCards: (chatId: string, cards: MemoryCard[]) => void;
   updateChatCollection: (chatId: string, collection: string) => void;
+
+  // Global (user-level) memory
+  globalMemoryCards: MemoryCard[];
+  setGlobalMemoryCards: (cards: MemoryCard[]) => void;
 
   // Settings
   settings: AppSettings;
@@ -52,6 +57,7 @@ export const useStore = create<Store>((set, get) => ({
       title: 'New Chat',
       messages: [],
       memory: '',
+      memoryCards: [],
       collection: get().settings.defaultCollection,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -112,6 +118,17 @@ export const useStore = create<Store>((set, get) => ({
     saveChats(chats);
     set({ chats });
   },
+
+  updateChatMemoryCards: (chatId: string, cards: MemoryCard[]) => {
+    const chats = get().chats.map((c) =>
+      c.id === chatId ? { ...c, memoryCards: cards, updatedAt: Date.now() } : c
+    );
+    saveChats(chats);
+    set({ chats });
+  },
+
+  globalMemoryCards: [],
+  setGlobalMemoryCards: (cards: MemoryCard[]) => set({ globalMemoryCards: cards }),
 
   updateChatCollection: (chatId: string, collection: string) => {
     const chats = get().chats.map((c) =>
