@@ -12,7 +12,13 @@
   ---
 </div>
 
+<<<<<<< HEAD
 ## 🌟 Overview
+=======
+Backend for this project : https://github.com/dilip-bing/memorag
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+>>>>>>> 0d9706e8978170f8837f240ef38bb4dbc1a25d66
 
 Memora is a next-generation conversational AI interface that combines the power of large language models with personalized knowledge management. Built for professionals, researchers, and knowledge workers who need an AI assistant that truly understands their context and remembers what matters.
 
