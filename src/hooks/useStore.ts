@@ -36,6 +36,10 @@ interface Store {
   toggleSettings: () => void;
   setSettingsOpen: (open: boolean) => void;
 
+  // Memory panel prefill (set when user clicks "save to memory" on a message)
+  memoryBrainDumpPrefill: string;
+  setMemoryBrainDumpPrefill: (text: string) => void;
+
   // Loading
   isLoading: boolean;
   setLoading: (loading: boolean) => void;
@@ -155,6 +159,10 @@ export const useStore = create<Store>((set, get) => ({
   toggleMemoryPanel: () => set((s) => ({ memoryPanelOpen: !s.memoryPanelOpen })),
   toggleSettings: () => set((s) => ({ settingsOpen: !s.settingsOpen })),
   setSettingsOpen: (open: boolean) => set({ settingsOpen: open }),
+
+  // Memory panel prefill
+  memoryBrainDumpPrefill: '',
+  setMemoryBrainDumpPrefill: (text: string) => set({ memoryBrainDumpPrefill: text }),
 
   // Loading
   isLoading: false,

@@ -2,7 +2,25 @@ import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../hooks/useStore';
 import type { Message } from '../types';
 
-function MessageBubble({ message }: { message: Message }) {
+// Test/placeholder filenames to suppress from sources
+const TEST_FILE_RE = /^(test|sample|example|demo|temp|placeholder|dummy)\./i;
+
+function getUniqueMeaningfulSources(message: Message) {
+  if (!message.sources?.length) return [];
+  const seen = new Set<string>();
+  return message.sources
+    .filter((s) => {
+      const name = (s.metadata?.file_name as string) || (s.metadata?.filename as string) || '';
+      if (TEST_FILE_RE.test(name)) return false;    // hide test files
+      if (s.score !== undefined && s.score < 0.25) return false; // hide low-relevance
+      if (seen.has(name)) return false;             // deduplicate
+      seen.add(name);
+      return true;
+    })
+    .slice(0, 4); // max 4 unique sources
+}
+
+function MessageBubble({ message, onSaveToMemory }: { message: Message; onSaveToMemory?: (msg: Message) => void }) {
   const isUser = message.role === 'user';
   const [progress, setProgress] = useState(0);
 
@@ -80,30 +98,49 @@ function MessageBubble({ message }: { message: Message }) {
           )}
         </div>
 
-        {/* Sources */}
-        {message.sources && message.sources.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <p className="text-xs font-medium text-gray-500 mb-1.5">Sources</p>
-            <div className="flex flex-wrap gap-1.5">
-              {message.sources.map((s, i) => {
-                const filename =
-                  (s.metadata?.file_name as string) ||
-                  (s.metadata?.filename as string) ||
-                  `Source ${i + 1}`;
-                return (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-md text-xs text-gray-600 border border-gray-100"
-                    title={`Score: ${s.score}\n\n${s.text.slice(0, 200)}...`}
-                  >
-                    <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    {filename}
-                  </span>
-                );
-              })}
+        {/* Sources — deduplicated, test files hidden */}
+        {(() => {
+          const sources = getUniqueMeaningfulSources(message);
+          if (!sources.length) return null;
+          return (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <p className="text-xs font-medium text-gray-400 mb-1.5">
+                {sources.length} source{sources.length !== 1 ? 's' : ''}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {sources.map((s, i) => {
+                  const filename =
+                    (s.metadata?.file_name as string) ||
+                    (s.metadata?.filename as string) ||
+                    `Source ${i + 1}`;
+                  return (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-md text-xs text-gray-500 border border-gray-100"
+                      title={`Score: ${s.score?.toFixed(2) ?? 'n/a'}\n\n${s.text.slice(0, 200)}...`}
+                    >
+                      <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      {filename}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
+          );
+        })()}
+
+        {/* Save to memory suggestion — only on assistant messages with content */}
+        {!isUser && message.content && !message.isStreaming && onSaveToMemory && (
+          <div className="mt-2.5 pt-2.5 border-t border-gray-100">
+            <button
+              onClick={() => onSaveToMemory(message)}
+              className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-amber-600 transition-colors group"
+            >
+              <span className="group-hover:scale-110 transition-transform">💡</span>
+              Save key points to memory
+            </button>
           </div>
         )}
       </div>
@@ -126,13 +163,30 @@ function formatMarkdown(text: string): string {
 }
 
 export default function ChatWindow() {
-  const { activeChat: getActiveChat, isLoading } = useStore();
+  const {
+    activeChat: getActiveChat,
+    isLoading,
+    memoryPanelOpen,
+    toggleMemoryPanel,
+    setMemoryBrainDumpPrefill,
+  } = useStore();
   const chat = getActiveChat();
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chat?.messages.length, isLoading]);
+
+  const handleSaveToMemory = (msg: Message) => {
+    // Find the preceding user message
+    const msgIndex = chat?.messages.findIndex((m) => m.id === msg.id) ?? -1;
+    const prevUser = msgIndex > 0 ? chat?.messages[msgIndex - 1] : null;
+    const prefill = prevUser
+      ? `Q: ${prevUser.content.slice(0, 200)}\nA: ${msg.content.slice(0, 400)}`
+      : msg.content.slice(0, 500);
+    setMemoryBrainDumpPrefill(prefill);
+    if (!memoryPanelOpen) toggleMemoryPanel();
+  };
 
   if (!chat) {
     return (
@@ -160,7 +214,7 @@ export default function ChatWindow() {
       )}
 
       {chat.messages.map((msg) => (
-        <MessageBubble key={msg.id} message={msg} />
+        <MessageBubble key={msg.id} message={msg} onSaveToMemory={handleSaveToMemory} />
       ))}
 
       <div ref={endRef} />

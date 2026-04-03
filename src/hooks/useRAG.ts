@@ -4,36 +4,62 @@ import type { MemoryCard, QueryResponse } from '../types';
 
 const importanceRank: Record<string, number> = { high: 0, medium: 1, low: 2 };
 
-function buildMemoryContext(globalCards: MemoryCard[], chatCards: MemoryCard[]): string {
+// Detect whether a question is personal/lifestyle or technical/document-related.
+// Personal queries get full memory; technical queries only get style preferences + skills.
+const PERSONAL_RE = /\b(i |my |me |myself|personal|feel|health|sleep|diet|habit|life|goal|visa|university|college|study|career|plan|anxiety|stress|mood|relationship|family|friend|routine|wake|morning|night|schedule|motivation|confidence|worry|afraid|hope|dream|wish|want to|need to|should i|can i|how do i|am i)\b/i;
+
+function detectQueryType(q: string): 'personal' | 'technical' {
+  return PERSONAL_RE.test(q) ? 'personal' : 'technical';
+}
+
+function buildMemoryContext(
+  globalCards: MemoryCard[],
+  chatCards: MemoryCard[],
+  question: string,
+): string {
   if (!globalCards.length && !chatCards.length) return '';
 
-  const sortCards = (cards: MemoryCard[]) =>
+  const sortByImportance = (cards: MemoryCard[]) =>
     [...cards].sort((a, b) => (importanceRank[a.importance] ?? 1) - (importanceRank[b.importance] ?? 1));
 
+  const queryType = detectQueryType(question);
+
+  // For technical queries only inject style/skill cards — never personal life details
+  const relevantGlobal =
+    queryType === 'personal'
+      ? globalCards
+      : globalCards.filter((c) => c.type === 'preference' || c.type === 'skill');
+
+  if (!relevantGlobal.length && !chatCards.length) return '';
+
   const lines: string[] = [
-    '[PERSONALIZATION — Use this context to improve response accuracy, depth, and relevance]',
+    '--- CONTEXT (apply before answering) ---',
+    '',
+    'STRICT RULES:',
+    '1. GROUND TRUTH — everything the user states in this conversation is true; never correct or contradict it',
+    '2. PRIORITY — current chat context overrides user profile; profile only supplements',
+    '3. SCOPE — only reference profile details when directly relevant to this specific question',
+    '4. TONE — never end with motivational phrases, encouragement, or "you can do it"-style closings',
+    '5. LENGTH — match response length to question complexity; short question = concise answer',
     '',
   ];
 
-  if (globalCards.length > 0) {
-    lines.push('About the user:');
-    sortCards(globalCards).forEach((c) => lines.push(`  • ${c.content}`));
-    lines.push('');
-  }
-
+  // Chat context first — highest priority
   if (chatCards.length > 0) {
-    lines.push('Current conversation context:');
-    sortCards(chatCards).forEach((c) => lines.push(`  • ${c.content}`));
+    lines.push('CURRENT CHAT CONTEXT (takes priority):');
+    sortByImportance(chatCards).forEach((c) => lines.push(`  • ${c.content}`));
     lines.push('');
   }
 
-  lines.push(
-    'Instructions: Adjust answer depth, terminology, and focus to match this context.',
-    'Skip basics the user already knows. Be specific to their situation.',
-    '[END PERSONALIZATION]',
-    '',
-  );
+  // User profile second — lower priority, already scoped to relevant types
+  if (relevantGlobal.length > 0) {
+    const note = queryType === 'technical' ? ' (style preferences only — ignore personal details)' : '';
+    lines.push(`USER PROFILE${note}:`);
+    sortByImportance(relevantGlobal).forEach((c) => lines.push(`  • ${c.content}`));
+    lines.push('');
+  }
 
+  lines.push('--- END CONTEXT ---', '');
   return lines.join('\n');
 }
 
@@ -60,10 +86,11 @@ export function useRAG() {
     setLoading(true);
 
     try {
-      // Build rich personalised context from both memory layers
+      // Build rich personalised context — scoped to query type
       const memContext = buildMemoryContext(
         globalMemoryCards,
         chat.memoryCards ?? [],
+        question,
       );
       const fullQuestion = memContext ? `${memContext}\n${question}` : question;
 

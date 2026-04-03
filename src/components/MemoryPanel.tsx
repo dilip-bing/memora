@@ -125,6 +125,8 @@ export default function MemoryPanel() {
     globalMemoryCards,
     memoryPanelOpen,
     toggleMemoryPanel,
+    memoryBrainDumpPrefill,
+    setMemoryBrainDumpPrefill,
   } = useStore();
   const { extractMemory, loadGlobalMemory, saveGlobalMemory } = useMemory();
 
@@ -150,15 +152,20 @@ export default function MemoryPanel() {
   const [saved, setSaved] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
-  // Load data when panel opens
+  // Load data when panel opens + handle prefill from "Save to memory" button
   useEffect(() => {
     if (!memoryPanelOpen) return;
-    // Load global from backend (or from store cache)
     setProfileCards([...globalMemoryCards]);
     loadGlobalMemory().then((cards) => setProfileCards(cards)).catch(() => {});
-    // Load chat memory from store
     if (chat) setChatCards([...(chat.memoryCards ?? [])]);
     setIsDirty(false);
+
+    // If a prefill was set (from "Save key points" button), pick it up
+    if (memoryBrainDumpPrefill) {
+      setBrainDump(memoryBrainDumpPrefill);
+      setTab('chat'); // switch to chat tab — it came from a conversation
+      setMemoryBrainDumpPrefill(''); // clear after consuming
+    }
   }, [memoryPanelOpen, chat?.id]);
 
   if (!memoryPanelOpen || !chat) return null;
@@ -356,6 +363,18 @@ export default function MemoryPanel() {
             </button>
           </div>
         </div>
+
+        {/* Performance warning */}
+        {activeCards.length >= 5 && (
+          <div className="flex items-start gap-2 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
+            <span className="shrink-0 mt-0.5">⚠️</span>
+            <span>
+              {tab === 'profile'
+                ? <><strong>{activeCards.length} profile cards</strong> — this slows <em>every</em> response across all chats. Keep under 10 for best performance.</>
+                : <><strong>{activeCards.length} chat cards</strong> — each card adds latency to this conversation. Focus on the most relevant context.</>}
+            </span>
+          </div>
+        )}
 
         {/* Card Canvas */}
         {activeCards.length > 0 && (
