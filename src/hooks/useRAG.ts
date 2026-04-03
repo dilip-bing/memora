@@ -70,13 +70,13 @@ export function useRAG() {
   const { settings, addMessage, updateMessage, setLoading, activeChat, globalMemoryCards } = useStore();
   const { user } = useAuth();
 
-  async function sendQuery(question: string, thinking: boolean): Promise<void> {
+  async function sendQuery(question: string, thinking: boolean, fileContext?: { name: string; text: string }): Promise<void> {
     const chat = activeChat();
     if (!chat) return;
     if (!settings.apiUrl) throw new Error('API URL not configured. Open Settings to set it.');
     if (!settings.apiKey) throw new Error('API Key not configured. Open Settings to set it.');
 
-    // Add user message
+    // Add user message (show only the user's typed question, not the injected file)
     addMessage(chat.id, {
       id: uuid(),
       role: 'user',
@@ -88,13 +88,21 @@ export function useRAG() {
     setLoading(true);
 
     try {
+      // If a file is attached, inject its text directly — no RAG retrieval needed
+      // The LLM reads the document content straight from the context window (like Claude/GPT)
+      let baseQuestion = question;
+      if (fileContext) {
+        baseQuestion =
+          `<document name="${fileContext.name}">\n${fileContext.text}\n</document>\n\n${question}`;
+      }
+
       // Build rich personalised context — scoped to query type
       const memContext = buildMemoryContext(
         globalMemoryCards,
         chat.memoryCards ?? [],
         question,
       );
-      const fullQuestion = memContext ? `${memContext}\n${question}` : question;
+      const fullQuestion = memContext ? `${memContext}\n${baseQuestion}` : baseQuestion;
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',

@@ -209,7 +209,7 @@ export default function ChatWindow() {
       {chat.messages.length === 0 && (
         <div className="text-center mt-20">
           <h2 className="text-lg font-medium text-gray-500 mb-2">Start a conversation</h2>
-          <p className="text-gray-400 text-sm">Ask anything about your documents</p>
+          <p className="text-gray-400 text-sm">Ask anything — or attach a file with the 📎 button</p>
         </div>
       )}
 

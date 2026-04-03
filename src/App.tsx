@@ -3,7 +3,6 @@ import ChatWindow from './components/ChatWindow';
 import MessageInput from './components/MessageInput';
 import MemoryPanel from './components/MemoryPanel';
 import SettingsModal from './components/SettingsModal';
-import DocumentsPanel from './components/DocumentsPanel';
 import LoginPage from './components/LoginPage';
 import { useStore } from './hooks/useStore';
 import { useAuth } from './hooks/useAuth';
@@ -23,7 +22,7 @@ function SetupPrompt() {
           </svg>
         </div>
         <h2 className="text-xl font-semibold text-gray-700 mb-2">Connect to your RAG API</h2>
-        <p className="text-gray-400 text-sm mb-5">Enter your API URL and key to start chatting with your documents.</p>
+        <p className="text-gray-400 text-sm mb-5">Enter your API URL and key to get started.</p>
         <button
           onClick={toggleSettings}
           className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium shadow-sm"
@@ -84,7 +83,6 @@ export default function App() {
 
       <MemoryPanel />
       <SettingsModal />
-      {!needsSetup && <DocumentsPanel />}
     </div>
   );
 }
