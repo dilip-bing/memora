@@ -24,6 +24,18 @@ function getUniqueMeaningfulSources(message: Message) {
 function MessageBubble({ message, onSaveToMemory }: { message: Message; onSaveToMemory?: (msg: Message) => void }) {
   const isUser = message.role === 'user';
   const [progress, setProgress] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!message.content) return;
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   // Predictive progress bar
   useEffect(() => {
@@ -42,14 +54,32 @@ function MessageBubble({ message, onSaveToMemory }: { message: Message; onSaveTo
   }, [message.isStreaming, message.startTime, message.thinking]);
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 group`}>
       <div
-        className={`max-w-[75%] ${
+        className={`max-w-[75%] relative ${
           isUser
             ? 'bg-[#CE5630] hover:bg-[#B84A28] text-white rounded-2xl rounded-br-md px-4 py-3 shadow-sm'
             : 'bg-white dark:bg-[#2A2A27] border border-[#D8D6CF] dark:border-[#2C2C2A] rounded-2xl rounded-bl-md px-5 py-4 shadow-sm'
         }`}
       >
+        {/* Copy button - only for assistant messages */}
+        {!isUser && message.content && !message.isStreaming && (
+          <button
+            onClick={handleCopy}
+            className="absolute top-3 right-3 p-1.5 rounded-lg bg-[#F0EDE4] dark:bg-[#252523] border border-[#D8D6CF] dark:border-[#2C2C2A] hover:bg-white dark:hover:bg-[#2C2C2A] opacity-0 group-hover:opacity-100 transition-all"
+            title={copied ? 'Copied!' : 'Copy message'}
+          >
+            {copied ? (
+              <svg className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5 text-[#5F5E5A] dark:text-[#888780]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            )}
+          </button>
+        )}
         {/* Streaming Status */}
         {message.isStreaming && message.streamingStatus && (
           <div className="mb-3 pb-3 border-b border-[#D8D6CF] dark:border-[#2C2C2A]">
