@@ -1,5 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { useStore } from './useStore';
+import { useAuth } from './useAuth';
 import type { MemoryCard, QueryResponse } from '../types';
 
 const importanceRank: Record<string, number> = { high: 0, medium: 1, low: 2 };
@@ -67,6 +68,7 @@ const POLL_INTERVAL = 2000; // 2 seconds
 
 export function useRAG() {
   const { settings, addMessage, updateMessage, setLoading, activeChat, globalMemoryCards } = useStore();
+  const { user } = useAuth();
 
   async function sendQuery(question: string, thinking: boolean): Promise<void> {
     const chat = activeChat();
@@ -99,8 +101,22 @@ export function useRAG() {
         'X-API-Key': settings.apiKey,
       };
 
+      // Build chat history from last 8 completed (non-streaming) messages
+      const chatHistory = (chat.messages ?? [])
+        .filter((m) => !m.isStreaming && m.content)
+        .slice(-8)
+        .map((m) => ({ role: m.role, content: m.content }));
+
       // Always use polling (no streaming)
-      await sendQueryPolling(fullQuestion, thinking, chat.id, chat.collection, headers);
+      await sendQueryPolling(
+        fullQuestion,
+        thinking,
+        chat.id,
+        chat.collection,
+        headers,
+        chatHistory,
+        user?.id,
+      );
     } finally {
       setLoading(false);
     }
@@ -112,6 +128,8 @@ export function useRAG() {
     chatId: string,
     collection: string,
     headers: Record<string, string>,
+    chatHistory: { role: string; content: string }[] = [],
+    userId?: string,
   ): Promise<void> {
     const messageId = uuid();
     
@@ -134,6 +152,9 @@ export function useRAG() {
           question,
           collection,
           thinking,
+          chat_id: chatId,
+          ...(userId ? { user_id: userId } : {}),
+          chat_history: chatHistory,
           ...(settings.selectedModel ? { model: settings.selectedModel } : {}),
         }),
       });
