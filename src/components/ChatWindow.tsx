@@ -79,7 +79,6 @@ function MessageBubble({ message }: { message: Message }) {
             <span>{message.elapsed_seconds}s</span>
           )}
         </div>
-        </div>
 
         {/* Sources */}
         {message.sources && message.sources.length > 0 && (
