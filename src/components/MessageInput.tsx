@@ -166,17 +166,17 @@ export default function MessageInput() {
   const memCount = (chat.memoryCards?.length ?? 0) + globalMemoryCards.length;
 
   return (
-    <div className="border-t border-gray-200 bg-white px-4 sm:px-8 py-4">
+    <div className="border-t border-[#D8D6CF] dark:border-[#2C2C2A] bg-white dark:bg-[#2A2A27] px-4 sm:px-8 py-4">
       {/* Think mode warning */}
       {showThinkWarning && (
-        <div className="mb-3 px-4 py-3 bg-amber-50 border border-amber-300 rounded-lg">
+        <div className="mb-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-800 rounded-lg">
           <div className="flex items-start gap-3">
             <svg className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <div className="flex-1">
-              <h4 className="font-semibold text-amber-900 mb-1">Think Mode — Deep Reasoning</h4>
-              <p className="text-sm text-amber-800 mb-3">
+              <h4 className="font-semibold text-amber-900 dark:text-amber-200 mb-1">Think Mode — Deep Reasoning</h4>
+              <p className="text-sm text-amber-800 dark:text-amber-300 mb-3">
                 This uses extended reasoning which takes approximately <strong>3–10 minutes</strong>.
                 A progress bar will show activity while it thinks.
               </p>
@@ -184,13 +184,13 @@ export default function MessageInput() {
                 <button
                   onClick={() => handleSubmit(true)}
                   disabled={isLoading}
-                  className="px-4 py-1.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm font-medium disabled:opacity-50"
+                  className="px-4 py-1.5 bg-amber-600 dark:bg-amber-700 text-white rounded-lg hover:bg-amber-700 dark:hover:bg-amber-800 text-sm font-medium disabled:opacity-50"
                 >
                   Continue with Think Mode
                 </button>
                 <button
                   onClick={() => setShowThinkWarning(false)}
-                  className="px-4 py-1.5 bg-white border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-50 text-sm font-medium"
+                  className="px-4 py-1.5 bg-white dark:bg-[#2A2A27] border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 text-sm font-medium"
                 >
                   Cancel
                 </button>
@@ -217,12 +217,12 @@ export default function MessageInput() {
 
       {/* Attached file badge */}
       {attachment && (
-        <div className="mb-2 flex items-center gap-2 px-3 py-2 bg-indigo-50 border border-indigo-200 rounded-xl w-fit max-w-full">
-          <svg className="w-4 h-4 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="mb-2 flex items-center gap-2 px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl w-fit max-w-full">
+          <svg className="w-4 h-4 text-[#CE5630] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
           </svg>
-          <span className="text-xs font-medium text-indigo-700 truncate max-w-[200px]">{attachment.name}</span>
-          <span className="text-xs text-indigo-400 shrink-0">
+          <span className="text-xs font-medium text-[#CE5630] dark:text-orange-400 truncate max-w-[200px]">{attachment.name}</span>
+          <span className="text-xs text-orange-400 dark:text-orange-500 shrink-0">
             {attachment.charCount > 1000
               ? `${(attachment.charCount / 1000).toFixed(1)}k chars`
               : `${attachment.charCount} chars`}
@@ -230,7 +230,7 @@ export default function MessageInput() {
           </span>
           <button
             onClick={() => setAttachment(null)}
-            className="ml-1 text-indigo-400 hover:text-indigo-700 transition-colors shrink-0"
+            className="ml-1 text-orange-400 dark:text-orange-500 hover:text-[#CE5630] dark:hover:text-orange-400 transition-colors shrink-0"
             title="Remove attachment"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,7 +264,7 @@ export default function MessageInput() {
         <div className="relative ml-auto" ref={dropdownRef}>
           <button
             onClick={() => { setModelsOpen(!modelsOpen); if (!modelsOpen) fetchModels(); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-orange-50 dark:bg-orange-900/20 text-[#CE5630] dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors border border-orange-200 dark:border-orange-800"
             title={`Model: ${settings.selectedModel || activeModel || 'not set'}`}
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -276,21 +276,21 @@ export default function MessageInput() {
             </svg>
           </button>
           {modelsOpen && (
-            <div className="absolute bottom-full mb-1 right-0 w-64 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 max-h-72 overflow-y-auto">
-              <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between">
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Select Model</span>
-                <button onClick={fetchModels} className="text-gray-400 hover:text-blue-600 transition-colors" title="Refresh models">
+            <div className="absolute bottom-full mb-1 right-0 w-64 bg-white dark:bg-[#2A2A27] border border-[#D8D6CF] dark:border-[#2C2C2A] rounded-lg shadow-lg py-1 z-50 max-h-72 overflow-y-auto">
+              <div className="px-3 py-2 border-b border-[#D8D6CF] dark:border-[#2C2C2A] flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#5F5E5A] dark:text-[#888780] uppercase tracking-wide">Select Model</span>
+                <button onClick={fetchModels} className="text-[#AAA8A0] dark:text-[#5F5E5A] hover:text-[#CE5630] dark:hover:text-orange-400 transition-colors" title="Refresh models">
                   <svg className={`w-3.5 h-3.5 ${modelsLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                 </button>
               </div>
               {modelsLoading && models.length === 0 ? (
-                <div className="px-3 py-4 text-xs text-gray-400 text-center">Loading models...</div>
+                <div className="px-3 py-4 text-xs text-[#AAA8A0] dark:text-[#5F5E5A] text-center">Loading models...</div>
               ) : models.length === 0 ? (
-                <div className="px-3 py-4 text-xs text-gray-400 text-center">
+                <div className="px-3 py-4 text-xs text-[#AAA8A0] dark:text-[#5F5E5A] text-center">
                   No models found.<br />
-                  <span className="text-gray-300">Check API URL & key in Settings</span>
+                  <span className="text-[#C0BDB5] dark:text-[#444441]">Check API URL & key in Settings</span>
                 </div>
               ) : (
                 models
@@ -302,22 +302,22 @@ export default function MessageInput() {
                       <button
                         key={m.name}
                         onClick={() => { updateSettings({ selectedModel: m.name }); setModelsOpen(false); }}
-                        className={`w-full text-left px-3 py-2.5 text-xs hover:bg-blue-50 flex items-center justify-between transition-colors ${
-                          isSelected ? 'text-blue-700 bg-blue-50 font-semibold' : 'text-gray-700'
+                        className={`w-full text-left px-3 py-2.5 text-xs hover:bg-orange-50 dark:hover:bg-orange-900/10 flex items-center justify-between transition-colors ${
+                          isSelected ? 'text-[#CE5630] dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 font-semibold' : 'text-[#3A3936] dark:text-[#D3D1C7]'
                         }`}
                       >
                         <div className="flex items-center gap-2">
                           {isSelected && (
-                            <svg className="w-3.5 h-3.5 text-blue-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-3.5 h-3.5 text-[#CE5630] dark:text-orange-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                             </svg>
                           )}
                           <span>{m.name}</span>
                           {isDefault && (
-                            <span className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-400 text-[10px] font-medium">default</span>
+                            <span className="px-1.5 py-0.5 rounded bg-[#F0EDE4] dark:bg-[#252523] text-[#AAA8A0] dark:text-[#5F5E5A] text-[10px] font-medium">default</span>
                           )}
                         </div>
-                        <span className="text-gray-400 shrink-0">{(m.size / 1e9).toFixed(1)}GB</span>
+                        <span className="text-[#AAA8A0] dark:text-[#5F5E5A] shrink-0">{(m.size / 1e9).toFixed(1)}GB</span>
                       </button>
                     );
                   })
@@ -344,8 +344,8 @@ export default function MessageInput() {
           disabled={isLoading || attachLoading}
           className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all border ${
             attachment
-              ? 'bg-indigo-100 border-indigo-300 text-indigo-600'
-              : 'bg-gray-50 border-gray-300 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+              ? 'bg-gradient-to-br from-orange-400 to-[#CE5630] border-orange-500 text-white shadow-sm'
+              : 'bg-[#F0EDE4] dark:bg-[#252523] border-[#D8D6CF] dark:border-[#2C2C2A] text-[#AAA8A0] dark:text-[#5F5E5A] hover:bg-white dark:hover:bg-[#2C2C2A] hover:text-[#CE5630] dark:hover:text-orange-400'
           } disabled:opacity-40`}
           title="Attach a file (PDF, TXT, DOCX, MD, CSV) — read for this message only"
         >
@@ -365,7 +365,7 @@ export default function MessageInput() {
         <div className="flex-1 relative">
           <textarea
             ref={textareaRef}
-            className="w-full resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400 transition-colors"
+            className="w-full resize-none rounded-xl border border-[#D8D6CF] dark:border-[#2C2C2A] bg-white dark:bg-[#2A2A27] px-4 py-3 text-sm text-[#1A1A18] dark:text-[#F1EFE8] focus:outline-none focus:ring-2 focus:ring-[#CE5630] focus:border-transparent placeholder-[#AAA8A0] dark:placeholder-[#5F5E5A] transition-colors"
             placeholder={attachment ? 'Ask anything about the attached file...' : 'Ask anything...'}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -379,7 +379,7 @@ export default function MessageInput() {
         <button
           onClick={() => handleSubmit(false)}
           disabled={(!input.trim() && !attachment) || isLoading}
-          className="shrink-0 w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+          className="shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-[#CE5630] text-white flex items-center justify-center hover:from-orange-600 hover:to-[#B84A28] disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
           title="Send"
         >
           {isLoading ? (
