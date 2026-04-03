@@ -1,7 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cream: #f8f7f3;
+  /* Light Mode Colors */
+  --color-page-bg: #EDE9DF;
+  --color-sidebar-bg: #F0EDE4;
+  --color-sidebar-border: #E8E5DB;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #1A1A18;
+  --color-text-body: #3A3936;
+  --color-text-secondary: #5F5E5A;
+  --color-placeholder: #AAA8A0;
+  --color-disabled: #C0BDB5;
+  --color-brand: #CE5630;
+  --color-border: #D8D6CF;
+  --color-border-secondary: #D0CEC7;
 }
 
 @layer base {
@@ -10,20 +22,9 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-
-  /* Enable dark mode based on system preference or manual toggle */
-  @media (prefers-color-scheme: dark) {
-    :root:not(.light) {
-      color-scheme: dark;
-    }
-  }
-
-  :root.dark {
-    color-scheme: dark;
-  }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Light */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -31,17 +32,17 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #C0BDB5;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #AAA8A0;
 }
 
 /* Dark mode scrollbar */
 .dark ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: #444441;
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: #5F5E5A;
 }

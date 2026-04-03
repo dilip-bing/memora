@@ -14,19 +14,19 @@ function SetupPrompt() {
   const { toggleSettings } = useStore();
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <div className="flex-1 flex items-center justify-center bg-[#EDE9DF] dark:bg-[#1A1A18]">
       <div className="text-center max-w-sm px-6">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20 flex items-center justify-center">
-          <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white dark:bg-[#252523] flex items-center justify-center shadow-sm">
+          <svg className="w-8 h-8 text-[#CE5630]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
         </div>
-        <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Connect to your RAG API</h2>
-        <p className="text-gray-400 dark:text-gray-500 text-sm mb-5">Enter your API URL and key to get started.</p>
+        <h2 className="text-xl font-semibold text-[#1A1A18] dark:text-[#F1EFE8] mb-2">Connect to your RAG API</h2>
+        <p className="text-[#5F5E5A] dark:text-[#888780] text-sm mb-5">Enter your API URL and key to get started.</p>
         <button
           onClick={toggleSettings}
-          className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 dark:hover:from-blue-600 dark:hover:to-blue-700 transition-all text-sm font-medium shadow-sm"
+          className="px-6 py-2.5 bg-[#CE5630] hover:bg-[#B84A28] text-white rounded-lg transition-all text-sm font-medium shadow-sm"
         >
           Open Settings
         </button>
@@ -131,7 +131,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen bg-[#f8f7f3] dark:bg-gray-900 overflow-hidden">
+    <div className="flex h-screen bg-[#EDE9DF] dark:bg-[#1A1A18] overflow-hidden">
       <Sidebar />
 
       <div className={`flex-1 flex flex-col min-w-0 transition-all ${!sidebarOpen ? 'ml-0' : ''}`}>
