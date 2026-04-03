@@ -57,3 +57,16 @@ export interface OllamaModel {
   size: number;
   modified_at: string;
 }
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  picture: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+}

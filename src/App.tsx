@@ -4,7 +4,9 @@ import MessageInput from './components/MessageInput';
 import MemoryPanel from './components/MemoryPanel';
 import SettingsModal from './components/SettingsModal';
 import DocumentsPanel from './components/DocumentsPanel';
+import LoginPage from './components/LoginPage';
 import { useStore } from './hooks/useStore';
+import { useAuth } from './hooks/useAuth';
 import { useEffect } from 'react';
 
 function SetupPrompt() {
@@ -34,12 +36,28 @@ function SetupPrompt() {
 
 export default function App() {
   const { settings, sidebarOpen } = useStore();
+  const { isAuthenticated, token } = useAuth();
   const needsSetup = !settings.apiUrl || !settings.apiKey;
 
   // Set page title
   useEffect(() => {
     document.title = 'Memora — Local RAG Chat';
   }, []);
+
+  // Register user in backend DB once API is configured and user is authenticated
+  useEffect(() => {
+    if (!isAuthenticated || !token || !settings.apiUrl) return;
+    fetch(`${settings.apiUrl}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    }).catch(() => {}); // fire-and-forget, non-blocking
+  }, [isAuthenticated, token, settings.apiUrl]);
+
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
