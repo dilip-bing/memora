@@ -46,20 +46,20 @@ function MessageBubble({ message, onSaveToMemory }: { message: Message; onSaveTo
       <div
         className={`max-w-[75%] ${
           isUser
-            ? 'bg-indigo-600 text-white rounded-2xl rounded-br-md px-4 py-3'
-            : 'bg-white border border-gray-200 rounded-2xl rounded-bl-md px-5 py-4 shadow-sm'
+            ? 'bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 text-white rounded-2xl rounded-br-md px-4 py-3 shadow-sm'
+            : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl rounded-bl-md px-5 py-4 shadow-sm'
         }`}
       >
         {/* Streaming Status */}
         {message.isStreaming && message.streamingStatus && (
-          <div className="mb-3 pb-3 border-b border-gray-100">
+          <div className="mb-3 pb-3 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-medium text-gray-600">{message.streamingStatus}</span>
+              <span className="text-xs font-medium text-gray-600 dark:text-gray-300">{message.streamingStatus}</span>
             </div>
             {/* Predictive progress bar */}
-            <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-300 ease-out"
+                className="h-full bg-gradient-to-r from-blue-500 to-blue-700 dark:from-blue-400 dark:to-blue-600 rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
@@ -68,14 +68,14 @@ function MessageBubble({ message, onSaveToMemory }: { message: Message; onSaveTo
 
         {/* Attached file badge (user messages only) */}
         {isUser && message.attachedFile && (
-          <div className="mb-2 flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-500/20 rounded-lg w-fit">
-            <svg className="w-3.5 h-3.5 text-indigo-100 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mb-2 flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-500/20 dark:bg-blue-400/20 rounded-lg w-fit">
+            <svg className="w-3.5 h-3.5 text-blue-100 dark:text-blue-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
             </svg>
-            <span className="text-xs text-indigo-100 font-medium truncate max-w-[180px]">
+            <span className="text-xs text-blue-100 dark:text-blue-200 font-medium truncate max-w-[180px]">
               {message.attachedFile.name}
             </span>
-            <span className="text-[10px] text-indigo-200 shrink-0">
+            <span className="text-[10px] text-blue-200 dark:text-blue-300 shrink-0">
               {message.attachedFile.charCount > 1000
                 ? `${(message.attachedFile.charCount / 1000).toFixed(1)}k chars`
                 : `${message.attachedFile.charCount} chars`}
@@ -85,7 +85,7 @@ function MessageBubble({ message, onSaveToMemory }: { message: Message; onSaveTo
         )}
 
         {/* Content */}
-        <div className={`prose text-sm leading-relaxed ${isUser ? 'text-white' : 'text-gray-800'}`}>
+        <div className={`prose text-sm leading-relaxed ${isUser ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>
           {isUser ? (
             <p className="whitespace-pre-wrap m-0">{message.content}</p>
           ) : message.content ? (
@@ -99,15 +99,15 @@ function MessageBubble({ message, onSaveToMemory }: { message: Message; onSaveTo
         </div>
 
         {/* Meta */}
-        <div className={`flex items-center gap-2 mt-2 text-xs ${isUser ? 'text-indigo-200' : 'text-gray-400'}`}>
+        <div className={`flex items-center gap-2 mt-2 text-xs ${isUser ? 'text-blue-200 dark:text-blue-300' : 'text-gray-400 dark:text-gray-500'}`}>
           <span>{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
           {message.thinking !== undefined && (
             <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
               isUser
-                ? 'bg-indigo-500 text-indigo-100'
+                ? 'bg-blue-500/30 text-blue-100'
                 : message.thinking
-                  ? 'bg-purple-100 text-purple-600'
-                  : 'bg-emerald-100 text-emerald-600'
+                  ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+                  : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
             }`}>
               {message.thinking ? 'Think' : 'Fast'}
             </span>
@@ -122,8 +122,8 @@ function MessageBubble({ message, onSaveToMemory }: { message: Message; onSaveTo
           const sources = getUniqueMeaningfulSources(message);
           if (!sources.length) return null;
           return (
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <p className="text-xs font-medium text-gray-400 mb-1.5">
+            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+              <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-1.5">
                 {sources.length} source{sources.length !== 1 ? 's' : ''}
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -135,10 +135,10 @@ function MessageBubble({ message, onSaveToMemory }: { message: Message; onSaveTo
                   return (
                     <span
                       key={i}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-md text-xs text-gray-500 border border-gray-100"
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 dark:bg-gray-700/50 rounded-md text-xs text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-gray-600"
                       title={`Score: ${s.score?.toFixed(2) ?? 'n/a'}\n\n${s.text.slice(0, 200)}...`}
                     >
-                      <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                       {filename}
@@ -152,10 +152,10 @@ function MessageBubble({ message, onSaveToMemory }: { message: Message; onSaveTo
 
         {/* Save to memory suggestion — only on assistant messages with content */}
         {!isUser && message.content && !message.isStreaming && onSaveToMemory && (
-          <div className="mt-2.5 pt-2.5 border-t border-gray-100">
+          <div className="mt-2.5 pt-2.5 border-t border-gray-100 dark:border-gray-700">
             <button
               onClick={() => onSaveToMemory(message)}
-              className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-amber-600 transition-colors group"
+              className="flex items-center gap-1.5 text-[11px] text-gray-400 dark:text-gray-500 hover:text-amber-600 dark:hover:text-amber-500 transition-colors group"
             >
               <span className="group-hover:scale-110 transition-transform">💡</span>
               Save key points to memory
@@ -210,26 +210,26 @@ export default function ChatWindow() {
 
   if (!chat) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50">
+      <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-indigo-100 flex items-center justify-center">
-            <img src="/logo.png" alt="Memora" className="w-16 h-16 object-contain" />
+          <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 flex items-center justify-center p-4">
+            <img src="/logo1.png" alt="Memora" className="w-full h-full object-contain" />
           </div>
-          <h2 className="text-2xl font-semibold text-gray-700 mb-2">
+          <h2 className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent mb-2">
             Welcome{user ? `, ${user.name.split(' ')[0]}` : ''}!
           </h2>
-          <p className="text-gray-400 text-sm">Create a new chat to get started</p>
+          <p className="text-gray-400 dark:text-gray-500 text-sm">Create a new chat to get started</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-50 px-4 sm:px-8 py-6">
+    <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 px-4 sm:px-8 py-6">
       {chat.messages.length === 0 && (
         <div className="text-center mt-20">
-          <h2 className="text-lg font-medium text-gray-500 mb-2">Start a conversation</h2>
-          <p className="text-gray-400 text-sm">Ask anything — or attach a file with the 📎 button</p>
+          <h2 className="text-lg font-medium text-gray-500 dark:text-gray-400 mb-2">Start a conversation</h2>
+          <p className="text-gray-400 dark:text-gray-500 text-sm">Ask anything — or attach a file with the 📎 button</p>
         </div>
       )}
 

@@ -250,7 +250,7 @@ export default function DocumentsPanel() {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
-      onClick={toggleDocumentsPanel}
+      onClick={() => setOpen(false)}
     >
       <div
         className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col"
@@ -259,7 +259,7 @@ export default function DocumentsPanel() {
         {/* Header */}
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
           <h2 className="text-base font-semibold text-gray-800">Documents</h2>
-          <button onClick={toggleDocumentsPanel} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+          <button onClick={() => setOpen(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
