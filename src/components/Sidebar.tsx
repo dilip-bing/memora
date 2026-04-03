@@ -2,27 +2,6 @@ import { useState } from 'react';
 import { useStore } from '../hooks/useStore';
 import { useAuth } from '../hooks/useAuth';
 
-function useDarkMode() {
-  const [isDark, setIsDark] = useState(() => {
-    return document.documentElement.classList.contains('dark');
-  });
-
-  const toggleDarkMode = () => {
-    const newIsDark = !isDark;
-    setIsDark(newIsDark);
-    
-    if (newIsDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  };
-
-  return { isDark, toggleDarkMode };
-}
-
 export default function Sidebar() {
   const {
     chats,
@@ -39,7 +18,6 @@ export default function Sidebar() {
   } = useStore();
 
   const { user, logout } = useAuth();
-  const { isDark, toggleDarkMode } = useDarkMode();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -198,30 +176,6 @@ export default function Sidebar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Memory
-          </button>
-        </div>
-
-        {/* Dark Mode Toggle */}
-        <div className="p-3 pt-0">
-          <button
-            onClick={toggleDarkMode}
-            className="w-full flex items-center gap-2 px-3 py-2 text-[#3A3936] dark:text-[#888780] hover:bg-white dark:hover:bg-[#212120] rounded-lg transition-colors text-sm"
-          >
-            {isDark ? (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                Light Mode
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-                Dark Mode
-              </>
-            )}
           </button>
         </div>
 
