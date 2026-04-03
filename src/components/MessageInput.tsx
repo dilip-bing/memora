@@ -7,8 +7,8 @@ export default function MessageInput() {
   const { activeChat: getActiveChat, isLoading, settings, updateSettings, toggleMemoryPanel, memoryPanelOpen } = useStore();
   const { sendQuery } = useRAG();
   const [input, setInput] = useState('');
-  const [thinking, setThinking] = useState(settings.defaultThinking);
   const [error, setError] = useState('');
+  const [showThinkWarning, setShowThinkWarning] = useState(false);
   const [models, setModels] = useState<OllamaModel[]>([]);
   const [activeModel, setActiveModel] = useState('');
   const [modelsOpen, setModelsOpen] = useState(false);
@@ -63,13 +63,21 @@ export default function MessageInput() {
     });
   }, [input]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (useThinkMode = false) => {
     if (!input.trim() || isLoading || !chat) return;
+    
+    // Show warning for think mode
+    if (useThinkMode && !showThinkWarning) {
+      setShowThinkWarning(true);
+      return;
+    }
+    
     setError('');
+    setShowThinkWarning(false);
     const question = input.trim();
     setInput('');
     try {
-      await sendQuery(question, thinking);
+      await sendQuery(question, useThinkMode);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     }
@@ -86,6 +94,39 @@ export default function MessageInput() {
 
   return (
     <div className="border-t border-gray-200 bg-white px-4 sm:px-8 py-4">
+      {/* Think mode warning */}
+      {showThinkWarning && (
+        <div className="mb-3 px-4 py-3 bg-amber-50 border border-amber-300 rounded-lg">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div className="flex-1">
+              <h4 className="font-semibold text-amber-900 mb-1">Think Mode - Deep Reasoning</h4>
+              <p className="text-sm text-amber-800 mb-3">
+                This mode uses deeper reasoning which takes approximately <strong>3-10 minutes</strong> per query. 
+                A progress bar will show activity.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleSubmit(true)}
+                  disabled={isLoading}
+                  className="px-4 py-1.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 text-sm font-medium disabled:opacity-50"
+                >
+                  Continue with Think Mode
+                </button>
+                <button
+                  onClick={() => setShowThinkWarning(false)}
+                  className="px-4 py-1.5 bg-white border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-50 text-sm font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {error && (
         <div className="mb-3 px-4 py-2.5 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 flex items-center gap-2">
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,28 +143,6 @@ export default function MessageInput() {
 
       {/* Controls bar */}
       <div className="flex items-center gap-3 mb-2">
-        {/* Thinking toggle */}
-        <button
-          onClick={() => setThinking(!thinking)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-            thinking
-              ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-              : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-          }`}
-          title={thinking ? 'Thinking mode: deeper reasoning, slower' : 'Fast mode: quick answers'}
-        >
-          {thinking ? (
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-          ) : (
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          )}
-          {thinking ? 'Think' : 'Fast'}
-        </button>
-
         {/* Memory toggle */}
         <button
           onClick={toggleMemoryPanel}
@@ -237,9 +256,10 @@ export default function MessageInput() {
           />
         </div>
         <button
-          onClick={handleSubmit}
+          onClick={() => handleSubmit(false)}
           disabled={!input.trim() || isLoading}
           className="shrink-0 w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+          title="Send (Fast mode)"
         >
           {isLoading ? (
             <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -251,6 +271,17 @@ export default function MessageInput() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           )}
+        </button>
+        <button
+          onClick={() => handleSubmit(true)}
+          disabled={!input.trim() || isLoading}
+          className="shrink-0 px-3 h-10 rounded-xl bg-purple-600 text-white flex items-center gap-1.5 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm text-xs font-medium"
+          title="Think mode - Deep reasoning (3-10 min)"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+          Think
         </button>
       </div>
     </div>

@@ -45,20 +45,8 @@ export function useRAG() {
         'X-API-Key': settings.apiKey,
       };
 
-      // Use streaming if supported
-      if (useStreamingFinal) {
-        try {
-          await sendQueryStream(fullQuestion, thinking, chat.id, chat.collection, headers);
-        } catch (streamError) {
-          // Fallback to polling if streaming fails
-          console.warn('Streaming failed, falling back to polling:', streamError);
-          // Don't call polling here - just let the error propagate and use the non-streaming path
-          throw streamError;
-        }
-      } else {
-        // Fallback to old polling method
-        await sendQueryPolling(fullQuestion, thinking, chat.id, chat.collection, headers);
-      }
+      // Always use polling (no streaming)
+      await sendQueryPolling(fullQuestion, thinking, chat.id, chat.collection, headers);
     } finally {
       setLoading(false);
     }
@@ -168,37 +156,61 @@ export function useRAG() {
     collection: string,
     headers: Record<string, string>,
   ): Promise<void> {
-    // Step 1: Submit the query — returns immediately with a task_id
-    const submitRes = await fetch(`${settings.apiUrl}/query`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        question,
-        collection,
-        thinking,
-        ...(settings.selectedModel ? { model: settings.selectedModel } : {}),
-      }),
-    });
-
-    if (!submitRes.ok) {
-      const err = await submitRes.json().catch(() => ({ detail: submitRes.statusText }));
-      throw new Error(err.detail || `HTTP ${submitRes.status}`);
-    }
-
-    const { task_id } = await submitRes.json();
-
-    // Step 2: Poll for the result
-    const data = await pollForResult(task_id, headers);
-
+    const messageId = uuid();
+    
     addMessage(chatId, {
-      id: uuid(),
+      id: messageId,
       role: 'assistant',
-      content: data.answer,
+      content: '',
       timestamp: Date.now(),
       thinking,
-      elapsed_seconds: data.elapsed_seconds,
-      sources: data.sources,
+      isStreaming: true,
+      streamingStatus: thinking ? 'Deep reasoning in progress...' : 'Processing your query...',
+      startTime: Date.now(),  // Track start for predictive progress
     });
+
+    try {
+      const submitRes = await fetch(`${settings.apiUrl}/query`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          question,
+          collection,
+          thinking,
+          ...(settings.selectedModel ? { model: settings.selectedModel } : {}),
+        }),
+      });
+
+      if (!submitRes.ok) {
+        const err = await submitRes.json().catch(() => ({ detail: submitRes.statusText }));
+        throw new Error(err.detail || `HTTP ${submitRes.status}`);
+      }
+
+      const { task_id } = await submitRes.json();
+
+      updateMessage(chatId, messageId, {
+        streamingStatus: thinking ? 'Deep reasoning in progress...' : 'Generating answer...',
+      });
+
+      const data = await pollForResult(task_id, headers);
+
+      updateMessage(chatId, messageId, {
+        content: data.answer,
+        elapsed_seconds: data.elapsed_seconds,
+        sources: data.sources,
+        isStreaming: false,
+        streamingStatus: undefined,
+        startTime: undefined,
+      });
+    } catch (error) {
+      updateMessage(chatId, messageId, {
+        content: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        isStreaming: false,
+        streamingStatus: undefined,
+        startTime: undefined,
+      });
+      throw error;
+    }
   }
 
   async function pollForResult(

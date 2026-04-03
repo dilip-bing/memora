@@ -1,9 +1,26 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../hooks/useStore';
 import type { Message } from '../types';
 
 function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user';
+  const [progress, setProgress] = useState(0);
+
+  // Predictive progress bar
+  useEffect(() => {
+    if (!message.isStreaming || !message.startTime) return;
+
+    // Estimated durations in milliseconds
+    const estimatedDuration = message.thinking ? 480000 : 13000; // 8 min or 13 sec
+    
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - message.startTime!;
+      const predictedProgress = Math.min((elapsed / estimatedDuration) * 100, 95); // Cap at 95%
+      setProgress(predictedProgress);
+    }, 100); // Update every 100ms for smooth animation
+
+    return () => clearInterval(interval);
+  }, [message.isStreaming, message.startTime, message.thinking]);
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
@@ -16,10 +33,17 @@ function MessageBubble({ message }: { message: Message }) {
       >
         {/* Streaming Status */}
         {message.isStreaming && message.streamingStatus && (
-          <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-100">
-            <div className="flex items-center gap-1.5">
+          <div className="mb-3 pb-3 border-b border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
               <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
               <span className="text-xs font-medium text-gray-600">{message.streamingStatus}</span>
+            </div>
+            {/* Predictive progress bar */}
+            <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${progress}%` }}
+              ></div>
             </div>
           </div>
         )}
