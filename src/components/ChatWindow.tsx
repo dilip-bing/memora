@@ -34,12 +34,8 @@ function MessageBubble({ message }: { message: Message }) {
         {/* Streaming Status */}
         {message.isStreaming && message.streamingStatus && (
           <div className="mb-3 pb-3 border-b border-gray-100">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
-              <span className="text-xs font-medium text-gray-600">{message.streamingStatus}</span>
-            </div>
-            {/* Predictive progress bar */}
-            <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+            {/* Predictive progress bar only */}
+            <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
