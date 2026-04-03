@@ -232,25 +232,14 @@ function ScopedTab({ apiUrl, apiKey, scope, scopeId, scopeLabel, emptyHint }: Sc
 }
 
 export default function DocumentsPanel() {
-  const { settings, activeChat: getActiveChat } = useStore();
+  const { settings, activeChat: getActiveChat, documentsPanelOpen, toggleDocumentsPanel } = useStore();
   const { user } = useAuth();
-  const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabType>('chat');
+  const [activeTab, setActiveTab] = useState<TabType>('user');
 
   const chat = getActiveChat();
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="fixed bottom-20 right-6 z-40 p-3 bg-white rounded-xl shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors group"
-        title="Documents"
-      >
-        <svg className="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-        </svg>
-      </button>
-    );
+  if (!documentsPanelOpen) {
+    return null;
   }
 
   const tabs: { id: TabType; icon: string; label: string }[] = [
@@ -261,7 +250,7 @@ export default function DocumentsPanel() {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
-      onClick={() => setOpen(false)}
+      onClick={toggleDocumentsPanel}
     >
       <div
         className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col"
@@ -270,7 +259,7 @@ export default function DocumentsPanel() {
         {/* Header */}
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
           <h2 className="text-base font-semibold text-gray-800">Documents</h2>
-          <button onClick={() => setOpen(false)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+          <button onClick={toggleDocumentsPanel} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>

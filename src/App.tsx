@@ -2,6 +2,7 @@ import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
 import MessageInput from './components/MessageInput';
 import MemoryPanel from './components/MemoryPanel';
+import DocumentsPanel from './components/DocumentsPanel';
 import SettingsModal from './components/SettingsModal';
 import LoginPage from './components/LoginPage';
 import { useStore } from './hooks/useStore';
@@ -145,6 +146,7 @@ export default function App() {
       </div>
 
       <MemoryPanel />
+      <DocumentsPanel />
       <SettingsModal />
     </div>
   );

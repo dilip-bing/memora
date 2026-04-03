@@ -13,6 +13,8 @@ export default function Sidebar() {
     renameChat,
     toggleSidebar,
     toggleSettings,
+    toggleMemoryPanel,
+    toggleDocumentsPanel,
   } = useStore();
 
   const { user, logout } = useAuth();
@@ -43,12 +45,10 @@ export default function Sidebar() {
     return (
       <button
         onClick={toggleSidebar}
-        className="fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md border border-gray-200 hover:bg-gray-50 transition-colors"
+        className="fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md border border-gray-200 hover:bg-gray-50 transition-colors flex items-center justify-center"
         title="Open sidebar"
       >
-        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
+        <img src="/logo.png" alt="Memora" className="w-6 h-6" />
       </button>
     );
   }
@@ -57,7 +57,10 @@ export default function Sidebar() {
     <aside className="w-72 h-screen bg-white border-r border-gray-200 flex flex-col shrink-0">
       {/* Header */}
       <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-indigo-600 tracking-tight">Memora</h1>
+        <div className="flex items-center gap-2">
+          <img src="/logo.png" alt="Memora" className="w-6 h-6" />
+          <h1 className="text-lg font-semibold text-indigo-600 tracking-tight">Memora</h1>
+        </div>
         <button
           onClick={toggleSidebar}
           className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
@@ -150,8 +153,34 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="border-t border-gray-100">
-        {/* Settings */}
+        {/* Common Documents */}
         <div className="p-3">
+          <button
+            onClick={toggleDocumentsPanel}
+            className="w-full flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            Common Documents
+          </button>
+        </div>
+
+        {/* Memory */}
+        <div className="p-3 pt-0">
+          <button
+            onClick={toggleMemoryPanel}
+            className="w-full flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Memory
+          </button>
+        </div>
+
+        {/* Settings */}
+        <div className="p-3 pt-0">
           <button
             onClick={toggleSettings}
             className="w-full flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm"

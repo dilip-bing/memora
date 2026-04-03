@@ -33,9 +33,11 @@ interface Store {
   // UI state
   sidebarOpen: boolean;
   memoryPanelOpen: boolean;
+  documentsPanelOpen: boolean;
   settingsOpen: boolean;
   toggleSidebar: () => void;
   toggleMemoryPanel: () => void;
+  toggleDocumentsPanel: () => void;
   toggleSettings: () => void;
   setSettingsOpen: (open: boolean) => void;
 
@@ -171,9 +173,11 @@ export const useStore = create<Store>((set, get) => ({
   // UI
   sidebarOpen: true,
   memoryPanelOpen: false,
+  documentsPanelOpen: false,
   settingsOpen: false,
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   toggleMemoryPanel: () => set((s) => ({ memoryPanelOpen: !s.memoryPanelOpen })),
+  toggleDocumentsPanel: () => set((s) => ({ documentsPanelOpen: !s.documentsPanelOpen })),
   toggleSettings: () => set((s) => ({ settingsOpen: !s.settingsOpen })),
   setSettingsOpen: (open: boolean) => set({ settingsOpen: open }),
 
