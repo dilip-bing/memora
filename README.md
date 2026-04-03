@@ -119,6 +119,18 @@ Memora is a next-generation conversational AI interface that combines the power 
 
 ---
 
+## 🖼️ Screenshots
+
+![Memora screenshot 1](./screenshots/image1.png)
+![Memora screenshot 2](./screenshots/image2.png)
+![Memora screenshot 3](./screenshots/image3.png)
+![Memora screenshot 4](./screenshots/image4.png)
+![Memora screenshot 5](./screenshots/image5.png)
+![Memora screenshot 6](./screenshots/image6.png)
+![Memora system monitoring dashboard](./screenshots/monitor.png)
+
+---
+
 ## 📚 Documentation
 
 ### Building for Production
