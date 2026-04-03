@@ -7,7 +7,7 @@ import LoginPage from './components/LoginPage';
 import { useStore } from './hooks/useStore';
 import { useAuth } from './hooks/useAuth';
 import { useMemory } from './hooks/useMemory';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 function SetupPrompt() {
   const { toggleSettings } = useStore();
@@ -35,15 +35,23 @@ function SetupPrompt() {
 }
 
 export default function App() {
-  const { settings, sidebarOpen } = useStore();
-  const { isAuthenticated, token } = useAuth();
+  const { settings, sidebarOpen, chats, activeChatId, setChatsFromBackend } = useStore();
+  const { isAuthenticated, token, user } = useAuth();
   const { loadGlobalMemory } = useMemory();
   const needsSetup = !settings.apiUrl || !settings.apiKey;
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSyncedRef = useRef<Record<string, number>>({});
+  const prevChatsRef = useRef(chats);
 
   // Set page title
   useEffect(() => {
     document.title = 'Memora — Local RAG Chat';
   }, []);
+
+  const apiHeaders = {
+    'Content-Type': 'application/json',
+    'X-API-Key': settings.apiKey,
+  };
 
   // Register user in backend DB once API is configured and user is authenticated
   useEffect(() => {
@@ -52,7 +60,7 @@ export default function App() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
-    }).catch(() => {}); // fire-and-forget
+    }).catch(() => {});
   }, [isAuthenticated, token, settings.apiUrl]);
 
   // Load global memory from backend once API is ready
@@ -60,6 +68,61 @@ export default function App() {
     if (!isAuthenticated || !settings.apiUrl || !settings.apiKey) return;
     loadGlobalMemory().catch(() => {});
   }, [isAuthenticated, settings.apiUrl, settings.apiKey]);
+
+  // ── Chat sync ────────────────────────────────────────────────────────────
+
+  // On login + API ready: pull chats from backend (source of truth)
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id || !settings.apiUrl || !settings.apiKey) return;
+    fetch(`${settings.apiUrl}/chats?user_id=${user.id}`, { headers: apiHeaders })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.chats?.length > 0) {
+          setChatsFromBackend(data.chats);
+        }
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.id, settings.apiUrl, settings.apiKey]);
+
+  // After each chat change: debounce-sync the active chat to backend
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id || !settings.apiUrl || !settings.apiKey || !activeChatId) return;
+    const chat = chats.find((c) => c.id === activeChatId);
+    if (!chat) return;
+    // Skip if this chat is currently streaming (updateMessage fires rapidly)
+    if (chat.messages.some((m) => m.isStreaming)) return;
+
+    if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+    syncTimerRef.current = setTimeout(() => {
+      const lastSynced = lastSyncedRef.current[chat.id] ?? 0;
+      if (chat.updatedAt <= lastSynced) return; // nothing new
+      fetch(`${settings.apiUrl}/chats/${chat.id}`, {
+        method: 'PUT',
+        headers: apiHeaders,
+        body: JSON.stringify({ user_id: user.id, chat }),
+      })
+        .then(() => { lastSyncedRef.current[chat.id] = chat.updatedAt; })
+        .catch(() => {});
+    }, 1500); // 1.5 s debounce
+    return () => { if (syncTimerRef.current) clearTimeout(syncTimerRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chats, activeChatId, isAuthenticated, user?.id]);
+
+  // When chats are removed locally, delete them from backend too
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id || !settings.apiUrl || !settings.apiKey) return;
+    const prev = prevChatsRef.current;
+    const deleted = prev.filter((p) => !chats.some((c) => c.id === p.id));
+    deleted.forEach((c) => {
+      fetch(`${settings.apiUrl}/chats/${c.id}?user_id=${user.id}`, {
+        method: 'DELETE',
+        headers: apiHeaders,
+      }).catch(() => {});
+    });
+    prevChatsRef.current = chats;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chats]);
 
   // Show login page if not authenticated
   if (!isAuthenticated) {

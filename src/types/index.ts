@@ -12,6 +12,12 @@ export interface MemoryCard {
 }
 
 // ── Messages ──────────────────────────────────────────────────────────────
+export interface AttachedFile {
+  name: string;
+  charCount: number;
+  truncated: boolean;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -23,6 +29,7 @@ export interface Message {
   isStreaming?: boolean;
   streamingStatus?: string;
   startTime?: number;  // For predictive progress bar
+  attachedFile?: AttachedFile; // Ephemeral file attached to this message
 }
 
 export interface SourceNode {

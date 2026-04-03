@@ -76,13 +76,20 @@ export function useRAG() {
     if (!settings.apiUrl) throw new Error('API URL not configured. Open Settings to set it.');
     if (!settings.apiKey) throw new Error('API Key not configured. Open Settings to set it.');
 
-    // Add user message (show only the user's typed question, not the injected file)
+    // Add user message — store attachedFile so the chat bubble can show a badge
     addMessage(chat.id, {
       id: uuid(),
       role: 'user',
       content: question,
       timestamp: Date.now(),
       thinking,
+      ...(fileContext ? {
+        attachedFile: {
+          name: fileContext.name,
+          charCount: fileContext.text.length,
+          truncated: fileContext.text.length >= 50_000,
+        }
+      } : {}),
     });
 
     setLoading(true);

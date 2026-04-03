@@ -19,6 +19,9 @@ interface Store {
   updateChatMemoryCards: (chatId: string, cards: MemoryCard[]) => void;
   updateChatCollection: (chatId: string, collection: string) => void;
 
+  // Backend sync
+  setChatsFromBackend: (chats: Chat[]) => void;
+
   // Global (user-level) memory
   globalMemoryCards: MemoryCard[];
   setGlobalMemoryCards: (cards: MemoryCard[]) => void;
@@ -129,6 +132,20 @@ export const useStore = create<Store>((set, get) => ({
     );
     saveChats(chats);
     set({ chats });
+  },
+
+  // Replace local chats with backend chats (merge: backend wins, keep any local-only chats)
+  setChatsFromBackend: (backendChats: Chat[]) => {
+    const { chats: localChats, activeChatId } = get();
+    const backendIds = new Set(backendChats.map((c) => c.id));
+    // Keep local chats not yet synced to backend, prepend backend chats
+    const localOnly = localChats.filter((c) => !backendIds.has(c.id));
+    const merged = [...backendChats, ...localOnly];
+    saveChats(merged);
+    const newActiveId = activeChatId && merged.some((c) => c.id === activeChatId)
+      ? activeChatId
+      : (merged[0]?.id ?? null);
+    set({ chats: merged, activeChatId: newActiveId });
   },
 
   globalMemoryCards: [],
