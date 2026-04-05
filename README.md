@@ -1,5 +1,17 @@
 <div align="center">
   <img src="./public/logo1.png" alt="Memora Logo" width="120" height="120">
+
+  ## 🖼️ Screenshots
+
+![Memora screenshot 1](./screenshots/image1.png)
+![Memora screenshot 2](./screenshots/image2.png)
+![Memora screenshot 3](./screenshots/image3.png)
+![Memora screenshot 4](./screenshots/image4.png)
+![Memora screenshot 5](./screenshots/image5.png)
+![Memora screenshot 6](./screenshots/image6.png)
+![Memora system monitoring dashboard](./screenshots/monitor.png)
+
+---
   
   # Memora
   
@@ -85,7 +97,7 @@ Memora is a next-generation conversational AI interface that combines the power 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/memora.git
+   git clone https://github.com/dilip-bing/memora.git
    cd memora
    ```
 
@@ -119,17 +131,7 @@ Memora is a next-generation conversational AI interface that combines the power 
 
 ---
 
-## 🖼️ Screenshots
 
-![Memora screenshot 1](./screenshots/image1.png)
-![Memora screenshot 2](./screenshots/image2.png)
-![Memora screenshot 3](./screenshots/image3.png)
-![Memora screenshot 4](./screenshots/image4.png)
-![Memora screenshot 5](./screenshots/image5.png)
-![Memora screenshot 6](./screenshots/image6.png)
-![Memora system monitoring dashboard](./screenshots/monitor.png)
-
----
 
 ## 📚 Documentation
 
@@ -290,6 +292,6 @@ For questions, issues, or feature requests, please open an issue on GitHub.
   
   **Built with ❤️ for the future of personal AI**
   
-  [⭐ Star us on GitHub](https://github.com/yourusername/memora) • [🐛 Report Bug](https://github.com/yourusername/memora/issues) • [💡 Request Feature](https://github.com/yourusername/memora/issues)
+  [⭐ Star us on GitHub](https://github.com/dilip-bing/memora) • [🐛 Report Bug](https://github.com/dilip-bing/memora/issues) • [💡 Request Feature](https://github.com/dilip-bing/memora/issues)
   
 </div>
