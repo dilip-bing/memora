@@ -70,6 +70,16 @@ export default function SettingsModal() {
             />
           </div>
 
+          {/* Demo note */}
+          <div className="flex items-start gap-2 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+            <svg className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z" />
+            </svg>
+            <p className="text-xs text-amber-700">
+              <span className="font-semibold">Demo note:</span> The API URL and API Key above are prefilled for evaluation purposes only. Simply click <span className="font-semibold">Save</span> to connect.
+            </p>
+          </div>
+
           {/* Default Collection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Default Collection</label>
