@@ -12,8 +12,11 @@ const DEFAULT_SETTINGS: AppSettings = {
   apiKey: DEMO_API_KEY,
   defaultCollection: 'documents',
   defaultThinking: true,
-  selectedModel: '',
+  selectedModel: 'gemma4:e2b',
 };
+
+// Old model names that should be migrated to the current default
+const OLD_DEFAULT_MODELS = ['', 'qwen3.5:9b-q4_K_M'];
 
 export function loadChats(): Chat[] {
   try {
@@ -45,6 +48,10 @@ export function loadSettings(): AppSettings {
     // If the user still has an old demo URL, replace it with the current one
     if (saved.apiUrl && OLD_DEMO_URLS.includes(saved.apiUrl)) {
       saved.apiUrl = DEMO_API_URL;
+    }
+    // If the user has an old/blank default model, migrate to the current default
+    if (saved.selectedModel !== undefined && OLD_DEFAULT_MODELS.includes(saved.selectedModel)) {
+      saved.selectedModel = DEFAULT_SETTINGS.selectedModel;
     }
     return { ...DEFAULT_SETTINGS, ...saved };
   } catch {
