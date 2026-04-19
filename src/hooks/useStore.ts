@@ -21,6 +21,7 @@ interface Store {
 
   // Backend sync
   setChatsFromBackend: (chats: Chat[]) => void;
+  clearChats: () => void;
 
   // Global (user-level) memory
   globalMemoryCards: MemoryCard[];
@@ -134,6 +135,12 @@ export const useStore = create<Store>((set, get) => ({
     );
     saveChats(chats);
     set({ chats });
+  },
+
+  // Wipe all chats from store + localStorage (called on logout)
+  clearChats: () => {
+    saveChats([]);
+    set({ chats: [], activeChatId: null, globalMemoryCards: [] });
   },
 
   // Replace local chats with backend chats (merge: backend wins, keep any local-only chats)

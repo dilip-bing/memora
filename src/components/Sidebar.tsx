@@ -15,6 +15,7 @@ export default function Sidebar() {
     toggleSettings,
     toggleMemoryPanel,
     toggleDocumentsPanel,
+    clearChats,
   } = useStore();
 
   const { user, logout } = useAuth();
@@ -37,6 +38,7 @@ export default function Sidebar() {
 
   const handleLogout = () => {
     if (confirm('Are you sure you want to sign out?')) {
+      clearChats(); // wipe localStorage chats so the next account starts fresh
       logout();
     }
   };
