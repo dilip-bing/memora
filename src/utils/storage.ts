@@ -33,10 +33,20 @@ export function saveChats(chats: Chat[]): void {
   localStorage.setItem(CHATS_KEY, JSON.stringify(chats));
 }
 
+const OLD_DEMO_URLS = [
+  'https://blair-surface-shorter-gerald.trycloudflare.com',
+];
+
 export function loadSettings(): AppSettings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
-    return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : DEFAULT_SETTINGS;
+    if (!raw) return DEFAULT_SETTINGS;
+    const saved = JSON.parse(raw) as Partial<AppSettings>;
+    // If the user still has an old demo URL, replace it with the current one
+    if (saved.apiUrl && OLD_DEMO_URLS.includes(saved.apiUrl)) {
+      saved.apiUrl = DEMO_API_URL;
+    }
+    return { ...DEFAULT_SETTINGS, ...saved };
   } catch {
     return DEFAULT_SETTINGS;
   }
